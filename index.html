@@ -4,159 +4,141 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Export Hisobot</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #f5f6fa;
-    --surface: #ffffff;
-    --border: #e4e6ef;
-    --text: #1a1d2e;
-    --muted: #6b7080;
-    --blue: #3b82f6;
-    --blue-light: #eff6ff;
-    --green: #10b981;
-    --green-light: #ecfdf5;
-    --red: #ef4444;
-    --shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6fa;--surface:#fff;--border:#e4e6ef;--text:#1a1d2e;--muted:#6b7080;
+  --blue:#3b82f6;--blue-light:#eff6ff;--green:#10b981;--green-light:#ecfdf5;
+  --red:#ef4444;--amber:#f59e0b;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
 
-  /* LOGIN */
-  #loginPage { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-  .login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px 36px; width: 100%; max-width: 380px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
-  .login-logo { text-align: center; margin-bottom: 28px; }
-  .login-logo .icon { width: 52px; height: 52px; background: var(--blue-light); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-  .login-logo .icon svg { width: 26px; height: 26px; stroke: var(--blue); fill: none; stroke-width: 2; }
-  .login-logo h1 { font-size: 20px; font-weight: 600; }
-  .login-logo p { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  .form-group { margin-bottom: 16px; }
-  .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--muted); }
-  .form-group input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; color: var(--text); background: var(--bg); transition: border 0.2s; outline: none; }
-  .form-group input:focus { border-color: var(--blue); background: #fff; }
-  .btn-login { width: 100%; padding: 11px; background: var(--blue); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.2s; margin-top: 4px; }
-  .btn-login:hover { opacity: 0.9; }
-  .login-err { color: var(--red); font-size: 13px; margin-top: 10px; text-align: center; min-height: 18px; }
+/* LOGIN */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:100%;max-width:380px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo .icon{width:52px;height:52px;background:var(--blue-light);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px}
+.login-logo .icon svg{width:26px;height:26px;stroke:var(--blue);fill:none;stroke-width:2}
+.login-logo h1{font-size:20px;font-weight:600}
+.login-logo p{color:var(--muted);font-size:13px;margin-top:4px}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--muted)}
+.fg input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:border .2s}
+.fg input:focus{border-color:var(--blue);background:#fff}
+.btn-primary{width:100%;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .2s}
+.btn-primary:hover{opacity:.9}
+.login-err{color:var(--red);font-size:13px;margin-top:10px;text-align:center;min-height:18px}
 
-  /* APP */
-  #appPage { display: none; }
-  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 16px; }
-  .topbar-logo { font-size: 15px; font-weight: 600; flex: 1; }
-  .topbar-logo span { color: var(--blue); }
-  .topbar-user { font-size: 13px; color: var(--muted); }
-  .btn-out { padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px; background: none; font-size: 13px; cursor: pointer; color: var(--muted); }
-  .btn-out:hover { background: var(--bg); }
+/* APP */
+#appPage{display:none}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:16px}
+.topbar-logo{font-size:15px;font-weight:600;flex:1}
+.topbar-logo span{color:var(--blue)}
+.topbar-user{font-size:13px;color:var(--muted)}
+.btn-out{padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:none;font-size:13px;cursor:pointer;color:var(--muted)}
+.btn-out:hover{background:var(--bg)}
+.main{padding:24px;max-width:1400px;margin:0 auto}
 
-  .main { padding: 24px; max-width: 1280px; margin: 0 auto; }
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.card-label{font-size:12px;color:var(--muted);margin-bottom:8px}
+.card-val{font-size:22px;font-weight:600}
+.card-val.green{color:var(--green)}
+.card-val.blue{color:var(--blue)}
 
-  /* TABS */
-  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
-  .tab { padding: 10px 18px; font-size: 13px; font-weight: 500; border: none; background: none; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s; }
-  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+/* RATE BAR */
+.rate-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.rate-bar label{font-size:13px;color:var(--muted)}
+.rate-bar input[type=number]{width:80px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-weight:500;color:var(--text);outline:none}
+.rate-bar input:focus{border-color:var(--blue)}
 
-  .section { display: none; }
-  .section.active { display: block; }
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border)}
+.tab{padding:10px 18px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.section{display:none}
+.section.active{display:block}
 
-  /* CARDS */
-  .cards { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 24px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
-  .card-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-  .card-val { font-size: 22px; font-weight: 600; }
-  .card-val.green { color: var(--green); }
-  .card-val.blue { color: var(--blue); }
+/* FILTER BAR */
+.filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filter-bar label{font-size:12px;color:var(--muted)}
+.filter-bar input,.filter-bar select{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);outline:none;background:var(--bg)}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--blue)}
 
-  /* RATE BAR */
-  .rate-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .rate-bar label { font-size: 13px; color: var(--muted); }
-  .rate-bar input[type=number] { width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--text); outline: none; }
-  .rate-bar input:focus { border-color: var(--blue); }
+/* BULK BAR */
+.bulk-bar{display:none;align-items:center;gap:12px;margin-bottom:12px;padding:10px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px}
 
-  /* TABLE */
-  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead tr { background: var(--bg); }
-  th { text-align: left; padding: 11px 14px; font-weight: 500; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
-  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--bg); }
-  .tfoot-row td { font-weight: 600; background: var(--bg); }
-  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; background: var(--blue-light); color: var(--blue); font-weight: 500; }
-  .green-txt { color: var(--green); font-weight: 500; }
-  .empty-state { text-align: center; padding: 48px; color: var(--muted); font-size: 13px; }
+/* TABLE */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--bg)}
+th{text-align:left;padding:11px 12px;font-weight:500;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+.tfoot-row td{font-weight:600;background:var(--bg)}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;background:var(--blue-light);color:var(--blue);font-weight:500}
+.badge-bolim{background:#fef3c7;color:#92400e;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500}
+.green-txt{color:var(--green);font-weight:500}
+.empty-state{text-align:center;padding:48px;color:var(--muted);font-size:13px}
 
-  /* FORM */
-  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; max-width: 560px; }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-  .fg { display: flex; flex-direction: column; gap: 5px; }
-  .fg label { font-size: 12px; color: var(--muted); font-weight: 500; }
-  .fg input { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text); outline: none; }
-  .fg input:focus { border-color: var(--blue); }
-  .btn-add { padding: 10px 24px; background: var(--blue); color: #fff; border: none; border-radius: 9px; font-size: 13px; font-weight: 500; cursor: pointer; }
-  .btn-add:hover { opacity: 0.9; }
-  .add-msg { font-size: 12px; color: var(--green); margin-left: 10px; }
-  .add-err { font-size: 12px; color: var(--red); margin-left: 10px; }
+/* BUTTONS */
+.btn{padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:none;font-size:13px;cursor:pointer;color:var(--muted)}
+.btn:hover{background:var(--bg)}
+.btn-blue{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-blue:hover{opacity:.9}
+.btn-red{background:var(--red);color:#fff;border-color:var(--red)}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
 
-  /* FILTER */
-  .filter-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .filter-bar label { font-size: 12px; color: var(--muted); }
-  .filter-bar input, .filter-bar select { padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text); outline: none; }
-  .filter-bar input:focus { border-color: var(--blue); }
-  .btn-reset { padding: 7px 14px; border: 1px solid var(--border); border-radius: 8px; background: none; font-size: 12px; cursor: pointer; color: var(--muted); }
+/* FORM */
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:600px}
+.form-card h3{font-size:15px;font-weight:600;margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.fi{display:flex;flex-direction:column;gap:5px}
+.fi label{font-size:12px;color:var(--muted);font-weight:500}
+.fi input,.fi select{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);outline:none;background:var(--bg)}
+.fi input:focus,.fi select:focus{border-color:var(--blue)}
+.msg-ok{font-size:12px;color:var(--green);margin-left:10px}
+.msg-err{font-size:12px;color:var(--red);margin-left:10px}
 
-  /* CHART */
-  .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-  .chart-inner { position: relative; width: 100%; height: 280px; }
-  .legend { display: flex; gap: 20px; margin-bottom: 14px; font-size: 12px; color: var(--muted); }
-  .legend span { display: flex; align-items: center; gap: 5px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+/* IMPORT */
+.drop-zone{border:2px dashed var(--border);border-radius:10px;padding:36px;text-align:center;cursor:pointer;transition:border-color .2s}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--blue);background:var(--blue-light)}
+.drop-zone p{font-size:13px;color:var(--muted);margin-top:8px}
 
-  /* IMPORT */
-  .import-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; max-width: 560px; }
-  .import-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
-  .import-card p { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
-  .drop-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 36px; text-align: center; cursor: pointer; transition: border-color 0.2s; }
-  .drop-zone:hover, .drop-zone.drag { border-color: var(--blue); background: var(--blue-light); }
-  .drop-zone p { font-size: 13px; color: var(--muted); margin-top: 8px; }
-  .import-msg { font-size: 13px; margin-top: 12px; min-height: 20px; }
+/* BOLIMLAR */
+.bolim-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.bolim-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--blue-light);color:var(--blue);border-radius:20px;font-size:13px;font-weight:500}
+.bolim-chip button{border:none;background:none;cursor:pointer;color:var(--red);font-size:14px;line-height:1;padding:0}
 
-  @media (max-width: 700px) {
-    .cards { grid-template-columns: 1fr 1fr; }
-    .form-grid { grid-template-columns: 1fr; }
-    .main { padding: 16px; }
-  }
+@media(max-width:700px){.cards{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.main{padding:16px}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginPage">
   <div class="login-box">
     <div class="login-logo">
-      <div class="icon">
-        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-      </div>
+      <div class="icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg></div>
       <h1>Export Hisobot</h1>
       <p>Kassir boshqaruv tizimi</p>
     </div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="loginEmail" placeholder="email@example.com" autocomplete="username">
-    </div>
-    <div class="form-group">
+    <div class="fg"><label>Email</label><input type="email" id="loginEmail" placeholder="email@example.com"></div>
+    <div class="fg">
       <label>Parol</label>
       <div style="position:relative">
-        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding-right:40px">
-        <button onclick="togglePass()" type="button" id="eyeBtn" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;color:var(--muted);padding:0;display:flex;align-items:center">
+        <input type="password" id="loginPass" placeholder="••••••••" style="width:100%;padding-right:40px" onkeydown="if(event.key==='Enter')doLogin()">
+        <button onclick="togglePass()" type="button" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;color:var(--muted);padding:0;display:flex;align-items:center">
           <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
     </div>
-    <button class="btn-login" onclick="doLogin()">Kirish</button>
+    <button class="btn-primary" onclick="doLogin()">Kirish</button>
     <div class="login-err" id="loginErr"></div>
   </div>
 </div>
 
-<!-- APP -->
 <div id="appPage">
   <div class="topbar">
     <div class="topbar-logo">Export <span>Hisobot</span></div>
@@ -165,7 +147,6 @@
   </div>
 
   <div class="main">
-    <!-- KARTALAR -->
     <div class="cards">
       <div class="card"><div class="card-label">Jami deklaratsiya</div><div class="card-val blue" id="cTotal">0</div></div>
       <div class="card"><div class="card-label">Jami summa (USD)</div><div class="card-val" id="cSum">$0</div></div>
@@ -173,72 +154,83 @@
       <div class="card"><div class="card-label">O'rtacha summa</div><div class="card-val" id="cAvg">$0</div></div>
     </div>
 
-    <!-- FOIZ -->
     <div class="rate-bar">
       <label>Xizmat haqi foizi:</label>
       <input type="number" id="rateInput" value="0.03" step="0.001" min="0" max="100">
       <span style="font-size:13px;color:var(--muted)">%</span>
       <div style="flex:1"></div>
-      <button class="btn-reset" onclick="loadData()">&#8635; Yangilash</button>
+      <button class="btn" onclick="loadData()">&#8635; Yangilash</button>
     </div>
 
-    <!-- TABLAR -->
     <div class="tabs">
       <button class="tab active" onclick="switchTab('hisobot',this)">Hisobot</button>
-      <button class="tab" onclick="switchTab('filter',this)">Filter</button>
+      <button class="tab" onclick="switchTab('filter',this)">Filter va yuklab olish</button>
       <button class="tab" onclick="switchTab('grafik',this)">Oylik grafik</button>
       <button class="tab" onclick="switchTab('qoshish',this)">Qo'shish</button>
-      <button class="tab" onclick="switchTab('import',this)">Excel import</button>
+      <button class="tab" onclick="switchTab('import',this)">Import</button>
+      <button class="tab" onclick="switchTab('bolimlar',this)">Bo'limlar</button>
     </div>
 
     <!-- HISOBOT -->
     <div id="sec-hisobot" class="section active">
-      <div id="bulkBar" style="display:none;align-items:center;gap:12px;margin-bottom:12px;padding:10px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px">
-        <span id="bulkCount" style="font-size:13px;font-weight:500;color:#dc2626"></span>
+      <div class="bulk-bar" id="bulkBar">
+        <span id="bulkCount" style="font-size:13px;font-weight:500;color:var(--red)"></span>
         <span style="font-size:13px;color:var(--muted)">ta tanlandi</span>
-        <button onclick="deleteSelected()" style="padding:7px 16px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer">O'chirish</button>
-        <button onclick="clearSelection()" style="padding:7px 14px;border:1px solid var(--border);border-radius:8px;background:none;font-size:13px;cursor:pointer;color:var(--muted)">Bekor qilish</button>
+        <button class="btn btn-red" onclick="deleteSelected()">O'chirish</button>
+        <button class="btn" onclick="clearSelection()">Bekor qilish</button>
       </div>
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th style="width:36px"><input type="checkbox" id="checkAll" onclick="toggleAll(this)" style="cursor:pointer;width:15px;height:15px"></th>
-            <th>№</th><th>Deklaratsiya</th><th>Jo'natuvchi</th><th>Qabul qiluvchi</th><th>Sana</th><th>Mashina</th>
+            <th><input type="checkbox" id="checkAll" onclick="toggleAll(this)" style="cursor:pointer;width:15px;height:15px"></th>
+            <th>№</th><th>Bo'lim</th><th>Deklaratsiya</th><th>Jo'natuvchi</th><th>Qabul qiluvchi</th><th>Sana</th><th>Mashina</th>
             <th style="text-align:right">Summa (USD)</th><th style="text-align:right">Xizmat haqi</th><th>Amal</th>
           </tr></thead>
           <tbody id="mainTbody"></tbody>
           <tfoot><tr class="tfoot-row" id="totalRow" style="display:none">
-            <td></td>
-            <td colspan="6" style="text-align:right;color:var(--muted)">Jami:</td>
+            <td></td><td colspan="7" style="text-align:right;color:var(--muted)">Jami:</td>
             <td style="text-align:right" id="tSum"></td>
             <td style="text-align:right;color:var(--green)" id="tFee"></td>
             <td></td>
           </tr></tfoot>
         </table>
-        <div id="emptyState" class="empty-state">Ma'lumot yo'q. "Qo'shish" yoki "Excel import" dan foydalaning.</div>
+        <div id="emptyState" class="empty-state">Ma'lumot yo'q.</div>
       </div>
     </div>
 
-    <!-- FILTER -->
+    <!-- FILTER VA YUKLAB OLISH -->
     <div id="sec-filter" class="section">
       <div class="filter-bar">
+        <label>Bo'lim:</label>
+        <select id="fBolim" onchange="applyFilter()" style="min-width:130px">
+          <option value="">Barchasi</option>
+        </select>
         <label>Jo'natuvchi:</label>
-        <input type="text" id="fExport" placeholder="Nomi..." style="width:160px" oninput="applyFilter()">
-        <label>Dan:</label>
-        <input type="date" id="fFrom" onchange="applyFilter()">
-        <label>Gacha:</label>
-        <input type="date" id="fTo" onchange="applyFilter()">
+        <input type="text" id="fExport" placeholder="Nomi..." style="width:150px" oninput="applyFilter()">
+        <label>Qabul qiluvchi:</label>
+        <input type="text" id="fQabul" placeholder="Nomi..." style="width:150px" oninput="applyFilter()">
+        <label>Sana dan:</label>
+        <input type="text" id="fFrom" placeholder="dd/mm/yyyy" style="width:110px" oninput="applyFilter()">
+        <label>gacha:</label>
+        <input type="text" id="fTo" placeholder="dd/mm/yyyy" style="width:110px" oninput="applyFilter()">
         <label>Min $:</label>
         <input type="number" id="fMin" placeholder="0" style="width:80px" oninput="applyFilter()">
-        <button class="btn-reset" onclick="resetFilter()">Tozalash</button>
+        <button class="btn" onclick="resetFilter()">Tozalash</button>
+        <button class="btn btn-green" onclick="exportFiltered()">&#8659; Excel yuklab olish</button>
       </div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:10px" id="filterInfo"></div>
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>№</th><th>Deklaratsiya</th><th>Jo'natuvchi</th><th>Sana</th>
+            <th>№</th><th>Bo'lim</th><th>Deklaratsiya</th><th>Jo'natuvchi</th><th>Qabul qiluvchi</th><th>Sana</th><th>Mashina</th>
             <th style="text-align:right">Summa</th><th style="text-align:right">Xizmat haqi</th>
           </tr></thead>
           <tbody id="filterTbody"></tbody>
+          <tfoot><tr class="tfoot-row" id="filterTotalRow" style="display:none">
+            <td colspan="7" style="text-align:right;color:var(--muted)">Jami:</td>
+            <td style="text-align:right" id="ftSum"></td>
+            <td style="text-align:right;color:var(--green)" id="ftFee"></td>
+          </tr></tfoot>
         </table>
         <div id="filterEmpty" class="empty-state" style="display:none">Natija topilmadi.</div>
       </div>
@@ -246,13 +238,13 @@
 
     <!-- GRAFIK -->
     <div id="sec-grafik" class="section">
-      <div class="chart-wrap">
-        <div class="legend">
-          <span><span class="legend-dot" style="background:#3b82f6"></span>Summa (USD)</span>
-          <span><span class="legend-dot" style="background:#10b981"></span>Xizmat haqi</span>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px">
+        <div style="display:flex;gap:20px;margin-bottom:14px;font-size:12px;color:var(--muted)">
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#3b82f6;display:inline-block"></span>Summa (USD)</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#10b981;display:inline-block"></span>Xizmat haqi</span>
         </div>
-        <div class="chart-inner">
-          <canvas id="barChart" role="img" aria-label="Oylik eksport summasi va xizmat haqi">Oylik ma'lumotlar.</canvas>
+        <div style="position:relative;width:100%;height:280px">
+          <canvas id="barChart" role="img" aria-label="Oylik grafik">Oylik ma'lumotlar.</canvas>
         </div>
       </div>
     </div>
@@ -260,27 +252,35 @@
     <!-- QO'SHISH -->
     <div id="sec-qoshish" class="section">
       <div class="form-card">
+        <h3>Yangi deklaratsiya qo'shish</h3>
         <div class="form-grid">
-          <div class="fg"><label>Deklaratsiya raqami *</label><input type="text" id="inDek" placeholder="12345678/XXXXXX/..."></div>
-          <div class="fg"><label>Sana</label><input type="date" id="inSana"></div>
-          <div class="fg"><label>Jo'natuvchi</label><input type="text" id="inJon" placeholder="Kompaniya nomi"></div>
-          <div class="fg"><label>Qabul qiluvchi</label><input type="text" id="inQab" placeholder="Qabul qiluvchi"></div>
-          <div class="fg"><label>Mashina raqami</label><input type="text" id="inMash" placeholder="50517LBA / ..."></div>
-          <div class="fg"><label>Summa (USD) *</label><input type="number" id="inSum" placeholder="0.00" step="0.01"></div>
+          <div class="fi"><label>Deklaratsiya raqami *</label><input type="text" id="inDek" placeholder="EK20260057310"></div>
+          <div class="fi"><label>Sana (dd/mm/yyyy)</label><input type="text" id="inSana" placeholder="02/03/2026"></div>
+          <div class="fi"><label>Jo'natuvchi</label><input type="text" id="inJon" placeholder="Kompaniya nomi"></div>
+          <div class="fi"><label>Qabul qiluvchi</label><input type="text" id="inQab" placeholder="Qabul qiluvchi"></div>
+          <div class="fi"><label>Mashina raqami</label><input type="text" id="inMash" placeholder="50517LBA / ..."></div>
+          <div class="fi"><label>Summa (USD) *</label><input type="number" id="inSum" placeholder="0.00" step="0.01"></div>
+          <div class="fi"><label>Bo'lim</label>
+            <select id="inBolim"><option value="">-- Bo'lim tanlang --</option></select>
+          </div>
         </div>
-        <button class="btn-add" onclick="addRow()">Saqlash</button>
-        <span class="add-msg" id="addMsg"></span>
-        <span class="add-err" id="addErr"></span>
+        <button class="btn btn-blue" onclick="addRow()">Saqlash</button>
+        <span class="msg-ok" id="addMsg"></span>
+        <span class="msg-err" id="addErr"></span>
       </div>
     </div>
 
     <!-- IMPORT -->
     <div id="sec-import" class="section">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:900px">
-
-        <div class="import-card">
+        <div class="form-card">
           <h3>Excel fayldan import</h3>
-          <p>Quyidagi shablon asosida to'ldirilgan Excel faylni yuklang.<br>Ustunlar: №, Deklaratsiya, Jo'natuvchi, Qabul qiluvchi, Sana, Mashina, Summa</p>
+          <div class="fi" style="margin-bottom:14px">
+            <label>Bo'lim tanlang *</label>
+            <select id="importBolim" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--bg)">
+              <option value="">-- Bo'lim tanlang --</option>
+            </select>
+          </div>
           <div class="drop-zone" id="dropZone" onclick="document.getElementById('xlsxFile').click()"
             ondragover="event.preventDefault();this.classList.add('drag')"
             ondragleave="this.classList.remove('drag')"
@@ -290,36 +290,48 @@
             <p style="font-size:11px;margin-top:4px">.xlsx formatida</p>
           </div>
           <input type="file" id="xlsxFile" accept=".xlsx" style="display:none" onchange="handleFile(this.files[0])">
-          <div class="import-msg" id="importMsg"></div>
+          <div style="font-size:13px;margin-top:12px;min-height:20px" id="importMsg"></div>
         </div>
 
         <div style="display:flex;flex-direction:column;gap:16px">
-          <div class="import-card">
+          <div class="form-card">
             <h3>Shablon yuklab olish</h3>
-            <p>To'ldirish uchun tayyor Excel shablon. 2 ta namuna qator bilan birga keladi.</p>
-            <button class="btn-add" onclick="downloadShablon()" style="margin-top:10px;display:inline-flex;align-items:center;gap:8px">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">To'ldirish uchun tayyor Excel shablon.</p>
+            <button class="btn btn-blue" onclick="downloadShablon()" style="display:inline-flex;align-items:center;gap:8px">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              shablon.xlsx yuklab olish
+              shablon.xlsx
             </button>
           </div>
-
-          <div class="import-card">
+          <div class="form-card">
             <h3>Dublikatlarni o'chirish</h3>
-            <p>Bir xil deklaratsiya raqamiga ega takroriy yozuvlarni topib o'chiradi. Eng oxirgi yozuv qoldiriladi.</p>
-            <button onclick="removeDuplicates()" style="margin-top:10px;display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:var(--red);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Bir xil deklaratsiya raqamidagi takroriy yozuvlarni o'chiradi.</p>
+            <button onclick="removeDuplicates()" style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:var(--red);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-              Dublikatlarni tekshir va o'chir
+              Dublikatlarni o'chir
             </button>
-            <div class="import-msg" id="dupMsg"></div>
+            <div style="font-size:13px;margin-top:10px;min-height:18px" id="dupMsg"></div>
           </div>
         </div>
-
       </div>
     </div>
+
+    <!-- BO'LIMLAR -->
+    <div id="sec-bolimlar" class="section">
+      <div class="form-card">
+        <h3>Bo'limlarni boshqarish</h3>
+        <div style="display:flex;gap:10px;margin-bottom:16px">
+          <input type="text" id="newBolimInput" placeholder="Yangi bo'lim nomi..." style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none" onkeydown="if(event.key==='Enter')addBolim()">
+          <button class="btn btn-blue" onclick="addBolim()">Qo'shish</button>
+        </div>
+        <div class="bolim-list" id="bolimList"></div>
+        <div style="font-size:13px;color:var(--muted);margin-top:8px" id="bolimMsg"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -328,361 +340,430 @@ const SUPA_KEY = 'sb_publishable_MFthW0-wLNa3ppqL6NNUfw_NvAi4ecC';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let allRows = [];
+let filteredRows = [];
+let selectedIds = new Set();
+let bolimlar = [];
 let myChart = null;
 
 // ---- AUTH ----
-function togglePass() {
-  const inp = document.getElementById('loginPass');
-  const icon = document.getElementById('eyeIcon');
-  if (inp.type === 'password') {
-    inp.type = 'text';
-    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
-  } else {
-    inp.type = 'password';
-    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-  }
+function togglePass(){
+  const inp=document.getElementById('loginPass');
+  const icon=document.getElementById('eyeIcon');
+  if(inp.type==='password'){inp.type='text';icon.innerHTML='<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';}
+  else{inp.type='password';icon.innerHTML='<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';}
 }
 
-async function doLogin() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass  = document.getElementById('loginPass').value;
-  document.getElementById('loginErr').textContent = '';
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) { document.getElementById('loginErr').textContent = 'Email yoki parol noto\'g\'ri!'; return; }
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  document.getElementById('loginErr').textContent='';
+  const {error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){document.getElementById('loginErr').textContent='Email yoki parol noto\'g\'ri!';return;}
   showApp();
 }
 
-async function doLogout() {
+async function doLogout(){
   await sb.auth.signOut();
-  document.getElementById('appPage').style.display = 'none';
-  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('appPage').style.display='none';
+  document.getElementById('loginPage').style.display='flex';
 }
 
-async function showApp() {
-  const { data: { user } } = await sb.auth.getUser();
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('appPage').style.display = 'block';
-  document.getElementById('topUser').textContent = user?.email || '';
+async function showApp(){
+  const {data:{user}}=await sb.auth.getUser();
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('appPage').style.display='block';
+  document.getElementById('topUser').textContent=user?.email||'';
+  await loadBolimlar();
   await loadData();
 }
 
-sb.auth.onAuthStateChange((event, session) => {
-  if (session) showApp();
-});
+sb.auth.onAuthStateChange((event,session)=>{if(session)showApp();});
+
+// ---- BO'LIMLAR ----
+async function loadBolimlar(){
+  const {data}=await sb.from('bolimlar').select('*').order('nom');
+  bolimlar=data||[];
+  renderBolimlar();
+  updateBolimSelects();
+}
+
+function renderBolimlar(){
+  const list=document.getElementById('bolimList');
+  list.innerHTML='';
+  if(!bolimlar.length){list.innerHTML='<span style="font-size:13px;color:var(--muted)">Hozircha bo\'lim yo\'q.</span>';return;}
+  bolimlar.forEach(b=>{
+    const chip=document.createElement('div');
+    chip.className='bolim-chip';
+    chip.innerHTML=`${b.nom} <button onclick="deleteBolim(${b.id},'${b.nom}')" title="O'chirish">×</button>`;
+    list.appendChild(chip);
+  });
+}
+
+function updateBolimSelects(){
+  const selects=['fBolim','importBolim','inBolim'];
+  selects.forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    const val=sel.value;
+    const first=id==='fBolim'?'<option value="">Barchasi</option>':'<option value="">-- Bo\'lim tanlang --</option>';
+    sel.innerHTML=first+bolimlar.map(b=>`<option value="${b.nom}">${b.nom}</option>`).join('');
+    sel.value=val;
+  });
+}
+
+async function addBolim(){
+  const nom=document.getElementById('newBolimInput').value.trim();
+  const msg=document.getElementById('bolimMsg');
+  if(!nom){msg.style.color='var(--red)';msg.textContent='Bo\'lim nomi kiriting!';return;}
+  if(bolimlar.find(b=>b.nom===nom)){msg.style.color='var(--red)';msg.textContent='Bu nom allaqachon bor!';return;}
+  const {error}=await sb.from('bolimlar').insert({nom});
+  if(error){msg.style.color='var(--red)';msg.textContent='Xato: '+error.message;return;}
+  document.getElementById('newBolimInput').value='';
+  msg.style.color='var(--green)';msg.textContent=nom+' qo\'shildi!';
+  setTimeout(()=>msg.textContent='',2000);
+  await loadBolimlar();
+}
+
+async function deleteBolim(id,nom){
+  if(!confirm(nom+' bo\'limini o\'chirasizmi? Unga tegishli deklaratsiyalar bo\'limisiz qoladi.'))return;
+  await sb.from('bolimlar').delete().eq('id',id);
+  await loadBolimlar();
+}
 
 // ---- DATA ----
-async function loadData() {
-  const { data, error } = await sb.from('deklaratsiyalar').select('*').order('sana', { ascending: false });
-  if (error) { console.error(error); return; }
-  allRows = data || [];
+async function loadData(){
+  const {data,error}=await sb.from('deklaratsiyalar').select('*').order('yaratilgan',{ascending:false});
+  if(error){console.error(error);return;}
+  allRows=data||[];
   refresh();
 }
 
-function getRate() { return parseFloat(document.getElementById('rateInput').value) || 0.03; }
+function getRate(){return parseFloat(document.getElementById('rateInput').value)||0.03;}
 
-function fmt(n) {
-  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+function fmt(n){return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
-function refresh() {
+function refresh(){
   updateCards();
   renderMain();
   applyFilter();
 }
 
-function updateCards() {
-  const rate = getRate();
-  const sum  = allRows.reduce((a, r) => a + (parseFloat(r.summa_usd) || 0), 0);
-  const fee  = sum * rate / 100;
-  const avg  = allRows.length ? sum / allRows.length : 0;
-  document.getElementById('cTotal').textContent = allRows.length;
-  document.getElementById('cSum').textContent   = fmt(sum);
-  document.getElementById('cFee').textContent   = fmt(fee);
-  document.getElementById('cAvg').textContent   = fmt(avg);
+function updateCards(){
+  const rate=getRate();
+  const sum=allRows.reduce((a,r)=>a+(parseFloat(r.summa_usd)||0),0);
+  const fee=sum*rate/100;
+  const avg=allRows.length?sum/allRows.length:0;
+  document.getElementById('cTotal').textContent=allRows.length;
+  document.getElementById('cSum').textContent=fmt(sum);
+  document.getElementById('cFee').textContent=fmt(fee);
+  document.getElementById('cAvg').textContent=fmt(avg);
 }
 
-let selectedIds = new Set();
-
-function renderMain() {
-  const rate  = getRate();
-  const tbody = document.getElementById('mainTbody');
-  tbody.innerHTML = '';
-  document.getElementById('emptyState').style.display = allRows.length ? 'none' : 'block';
-  document.getElementById('totalRow').style.display   = allRows.length ? '' : 'none';
-  const checkAll = document.getElementById('checkAll');
-  if (checkAll) checkAll.checked = false;
-  let tSum = 0, tFee = 0;
-  allRows.forEach((r, i) => {
-    const s = parseFloat(r.summa_usd) || 0;
-    const f = s * rate / 100;
-    tSum += s; tFee += f;
-    const tr = document.createElement('tr');
-    if (selectedIds.has(r.id)) tr.style.background = '#fff7f7';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = selectedIds.has(r.id);
-    cb.style.cssText = 'cursor:pointer;width:15px;height:15px;accent-color:#ef4444';
-    cb.addEventListener('change', function() { toggleRow(r.id, cb, tr); });
-    const tdCb = document.createElement('td');
-    tdCb.style.textAlign = 'center';
-    tdCb.appendChild(cb);
+function renderMain(){
+  const rate=getRate();
+  const tbody=document.getElementById('mainTbody');
+  tbody.innerHTML='';
+  document.getElementById('emptyState').style.display=allRows.length?'none':'block';
+  document.getElementById('totalRow').style.display=allRows.length?'':'none';
+  const ca=document.getElementById('checkAll');
+  if(ca)ca.checked=false;
+  let tSum=0,tFee=0;
+  allRows.forEach((r,i)=>{
+    const s=parseFloat(r.summa_usd)||0;
+    const f=s*rate/100;
+    tSum+=s;tFee+=f;
+    const tr=document.createElement('tr');
+    if(selectedIds.has(r.id))tr.style.background='#fff7f7';
+    const cb=document.createElement('input');
+    cb.type='checkbox';cb.checked=selectedIds.has(r.id);
+    cb.style.cssText='cursor:pointer;width:15px;height:15px;accent-color:#ef4444';
+    cb.addEventListener('change',()=>toggleRow(r.id,cb,tr));
+    const tdCb=document.createElement('td');tdCb.style.textAlign='center';tdCb.appendChild(cb);
     tr.appendChild(tdCb);
-    tr.insertAdjacentHTML('beforeend', `
+    tr.insertAdjacentHTML('beforeend',`
       <td>${i+1}</td>
-      <td>${r.dek_raqami || '-'}</td>
-      <td>${r.jonatuvchi || '-'}</td>
-      <td>${r.qabul || '-'}</td>
-      <td>${r.sana || '-'}</td>
-      <td><span class="badge">${r.mashina || '-'}</span></td>
+      <td><span class="badge-bolim">${r.bolim||'-'}</span></td>
+      <td>${r.dek_raqami||'-'}</td>
+      <td>${r.jonatuvchi||'-'}</td>
+      <td>${r.qabul||'-'}</td>
+      <td>${r.sana||'-'}</td>
+      <td><span class="badge">${r.mashina||'-'}</span></td>
       <td style="text-align:right">${fmt(s)}</td>
       <td style="text-align:right" class="green-txt">${fmt(f)}</td>
-      <td><button onclick="deleteRow(${r.id})" style="border:none;background:none;cursor:pointer;color:#ef4444;font-size:13px">O\'chirish</button></td>`);
+      <td><button onclick="deleteRow(${r.id})" style="border:none;background:none;cursor:pointer;color:#ef4444;font-size:13px">O'chirish</button></td>`);
     tbody.appendChild(tr);
   });
-  document.getElementById('tSum').textContent = fmt(tSum);
-  document.getElementById('tFee').textContent = fmt(tFee);
+  document.getElementById('tSum').textContent=fmt(tSum);
+  document.getElementById('tFee').textContent=fmt(tFee);
   updateBulkBar();
 }
 
-function toggleRow(id, cb, tr) {
-  if (cb.checked) { selectedIds.add(id); tr.style.background = '#fff7f7'; }
-  else { selectedIds.delete(id); tr.style.background = ''; }
-  const allCbs = document.querySelectorAll('#mainTbody input[type=checkbox]');
-  const checkAll = document.getElementById('checkAll');
-  if (checkAll) checkAll.checked = allCbs.length > 0 && [...allCbs].every(c => c.checked);
+function toggleRow(id,cb,tr){
+  if(cb.checked){selectedIds.add(id);tr.style.background='#fff7f7';}
+  else{selectedIds.delete(id);tr.style.background='';}
+  const allCbs=document.querySelectorAll('#mainTbody input[type=checkbox]');
+  const ca=document.getElementById('checkAll');
+  if(ca)ca.checked=allCbs.length>0&&[...allCbs].every(c=>c.checked);
   updateBulkBar();
 }
 
-function toggleAll(cb) {
+function toggleAll(cb){
   selectedIds.clear();
-  if (cb.checked) allRows.forEach(r => selectedIds.add(r.id));
+  if(cb.checked)allRows.forEach(r=>selectedIds.add(r.id));
   renderMain();
-  if (cb.checked) document.getElementById('checkAll').checked = true;
+  if(cb.checked)document.getElementById('checkAll').checked=true;
 }
 
-function updateBulkBar() {
-  const bar = document.getElementById('bulkBar');
-  const cnt = document.getElementById('bulkCount');
-  bar.style.display = selectedIds.size > 0 ? 'flex' : 'none';
-  if (cnt) cnt.textContent = selectedIds.size;
+function updateBulkBar(){
+  const bar=document.getElementById('bulkBar');
+  const cnt=document.getElementById('bulkCount');
+  bar.style.display=selectedIds.size>0?'flex':'none';
+  if(cnt)cnt.textContent=selectedIds.size;
 }
 
-function clearSelection() {
-  selectedIds.clear();
-  renderMain();
-}
+function clearSelection(){selectedIds.clear();renderMain();}
 
-async function deleteSelected() {
-  if (!selectedIds.size) return;
-  if (!confirm(selectedIds.size + " ta yozuv o'chirilsinmi?")) return;
-  const ids = [...selectedIds];
-  const { error } = await sb.from('deklaratsiyalar').delete().in('id', ids);
-  if (error) { alert('Xato: ' + error.message); return; }
+async function deleteSelected(){
+  if(!selectedIds.size)return;
+  if(!confirm(selectedIds.size+" ta yozuv o'chirilsinmi?"))return;
+  const ids=[...selectedIds];
+  await sb.from('deklaratsiyalar').delete().in('id',ids);
   selectedIds.clear();
   await loadData();
 }
 
-async function deleteRow(id) {
-  if (!confirm("O\'chirilsinmi?")) return;
-  await sb.from('deklaratsiyalar').delete().eq('id', id);
+async function deleteRow(id){
+  if(!confirm("O'chirilsinmi?"))return;
+  await sb.from('deklaratsiyalar').delete().eq('id',id);
   selectedIds.delete(id);
   await loadData();
 }
 
-
 // ---- FILTER ----
-function applyFilter() {
-  const rate = getRate();
-  const exp  = (document.getElementById('fExport').value || '').toLowerCase();
-  const from = document.getElementById('fFrom').value;
-  const to   = document.getElementById('fTo').value;
-  const min  = parseFloat(document.getElementById('fMin').value) || 0;
-  const filtered = allRows.filter(r => {
-    if (exp && !(r.jonatuvchi || '').toLowerCase().includes(exp)) return false;
-    if (from && r.sana < from) return false;
-    if (to   && r.sana > to)   return false;
-    if ((parseFloat(r.summa_usd) || 0) < min) return false;
-    return true;
-  });
-  const tbody = document.getElementById('filterTbody');
-  tbody.innerHTML = '';
-  document.getElementById('filterEmpty').style.display = filtered.length ? 'none' : 'block';
-  filtered.forEach((r, i) => {
-    const s = parseFloat(r.summa_usd) || 0;
-    const f = s * rate / 100;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${i+1}</td><td>${r.dek_raqami||'-'}</td><td>${r.jonatuvchi||'-'}</td><td>${r.sana||'-'}</td><td style="text-align:right">${fmt(s)}</td><td style="text-align:right" class="green-txt">${fmt(f)}</td>`;
-    tbody.appendChild(tr);
-  });
+function parseSana(s){
+  if(!s)return null;
+  // dd/mm/yyyy
+  const m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if(m)return new Date(m[3],m[2]-1,m[1]);
+  return null;
 }
 
-function resetFilter() {
-  ['fExport','fFrom','fTo','fMin'].forEach(id => document.getElementById(id).value = '');
+function applyFilter(){
+  const rate=getRate();
+  const bolim=(document.getElementById('fBolim').value||'').toLowerCase();
+  const exp=(document.getElementById('fExport').value||'').toLowerCase();
+  const qab=(document.getElementById('fQabul').value||'').toLowerCase();
+  const from=parseSana(document.getElementById('fFrom').value);
+  const to=parseSana(document.getElementById('fTo').value);
+  const min=parseFloat(document.getElementById('fMin').value)||0;
+
+  filteredRows=allRows.filter(r=>{
+    if(bolim&&!(r.bolim||'').toLowerCase().includes(bolim))return false;
+    if(exp&&!(r.jonatuvchi||'').toLowerCase().includes(exp))return false;
+    if(qab&&!(r.qabul||'').toLowerCase().includes(qab))return false;
+    if(from||to){
+      const rd=parseSana(r.sana);
+      if(rd){
+        if(from&&rd<from)return false;
+        if(to&&rd>to)return false;
+      }
+    }
+    if((parseFloat(r.summa_usd)||0)<min)return false;
+    return true;
+  });
+
+  const tbody=document.getElementById('filterTbody');
+  tbody.innerHTML='';
+  document.getElementById('filterEmpty').style.display=filteredRows.length?'none':'block';
+  document.getElementById('filterTotalRow').style.display=filteredRows.length?'':'none';
+  document.getElementById('filterInfo').textContent=filteredRows.length+' ta natija topildi';
+
+  let tSum=0,tFee=0;
+  filteredRows.forEach((r,i)=>{
+    const s=parseFloat(r.summa_usd)||0;
+    const f=s*rate/100;
+    tSum+=s;tFee+=f;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${i+1}</td>
+      <td><span class="badge-bolim">${r.bolim||'-'}</span></td>
+      <td>${r.dek_raqami||'-'}</td>
+      <td>${r.jonatuvchi||'-'}</td>
+      <td>${r.qabul||'-'}</td>
+      <td>${r.sana||'-'}</td>
+      <td><span class="badge">${r.mashina||'-'}</span></td>
+      <td style="text-align:right">${fmt(s)}</td>
+      <td style="text-align:right" class="green-txt">${fmt(f)}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('ftSum').textContent=fmt(tSum);
+  document.getElementById('ftFee').textContent=fmt(tFee);
+}
+
+function resetFilter(){
+  ['fBolim','fExport','fQabul','fFrom','fTo','fMin'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value='';
+  });
   applyFilter();
 }
 
-// ---- GRAFIK ----
-function renderChart() {
-  const rate    = getRate();
-  const monthly = {};
-  allRows.forEach(r => {
-    const key = r.sana ? r.sana.substring(0, 7) : 'Noma\'lum';
-    if (!monthly[key]) monthly[key] = { sum: 0, fee: 0 };
-    monthly[key].sum += parseFloat(r.summa_usd) || 0;
-    monthly[key].fee += (parseFloat(r.summa_usd) || 0) * rate / 100;
+// ---- EXCEL EXPORT ----
+function exportFiltered(){
+  const rate=getRate();
+  if(!filteredRows.length){alert('Eksport qilish uchun ma\'lumot yo\'q!');return;}
+  const header=['№','Bo\'lim','Deklaratsiya raqami','Jo\'natuvchi','Qabul qiluvchi','Sana','Mashina raqami','Summa (USD)','Xizmat haqi (USD)'];
+  const rows=filteredRows.map((r,i)=>{
+    const s=parseFloat(r.summa_usd)||0;
+    const f=parseFloat((s*rate/100).toFixed(2));
+    return[i+1,r.bolim||'',r.dek_raqami||'',r.jonatuvchi||'',r.qabul||'',r.sana||'',r.mashina||'',s,f];
   });
-  const labels = Object.keys(monthly).sort();
-  const sums   = labels.map(k => Math.round(monthly[k].sum * 100) / 100);
-  const fees   = labels.map(k => Math.round(monthly[k].fee * 100) / 100);
-  const ctx    = document.getElementById('barChart').getContext('2d');
-  if (myChart) myChart.destroy();
-  myChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Summa (USD)', data: sums, backgroundColor: '#3b82f6', borderRadius: 4 },
-        { label: 'Xizmat haqi', data: fees, backgroundColor: '#10b981', borderRadius: 4 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { autoSkip: false, maxRotation: 45, font: { size: 11 } }, grid: { display: false } },
-        y: { ticks: { callback: v => '$' + v.toLocaleString(), font: { size: 11 } } }
+  const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
+  ws['!cols']=[5,15,24,28,28,14,22,14,14].map(w=>({wch:w}));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Hisobot');
+  XLSX.writeFile(wb,'hisobot_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+// ---- GRAFIK ----
+function renderChart(){
+  const rate=getRate();
+  const monthly={};
+  allRows.forEach(r=>{
+    const key=r.sana?r.sana.slice(-4)+'-'+r.sana.slice(3,5):'Noma\'lum';
+    if(!monthly[key])monthly[key]={sum:0,fee:0};
+    monthly[key].sum+=parseFloat(r.summa_usd)||0;
+    monthly[key].fee+=(parseFloat(r.summa_usd)||0)*rate/100;
+  });
+  const labels=Object.keys(monthly).sort();
+  const sums=labels.map(k=>Math.round(monthly[k].sum*100)/100);
+  const fees=labels.map(k=>Math.round(monthly[k].fee*100)/100);
+  const ctx=document.getElementById('barChart').getContext('2d');
+  if(myChart)myChart.destroy();
+  myChart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Summa (USD)',data:sums,backgroundColor:'#3b82f6',borderRadius:4},
+      {label:'Xizmat haqi',data:fees,backgroundColor:'#10b981',borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{autoSkip:false,maxRotation:45,font:{size:11}},grid:{display:false}},
+        y:{ticks:{callback:v=>'$'+v.toLocaleString(),font:{size:11}}}
       }
     }
   });
 }
 
 // ---- QO'SHISH ----
-async function addRow() {
-  const dek  = document.getElementById('inDek').value.trim();
-  const sana = document.getElementById('inSana').value;
-  const jon  = document.getElementById('inJon').value.trim();
-  const qab  = document.getElementById('inQab').value.trim();
-  const mash = document.getElementById('inMash').value.trim();
-  const sum  = parseFloat(document.getElementById('inSum').value);
-  document.getElementById('addMsg').textContent = '';
-  document.getElementById('addErr').textContent = '';
-  if (!dek || !sum) { document.getElementById('addErr').textContent = 'Deklaratsiya va summa majburiy!'; return; }
-  const rate = getRate();
-  const { error } = await sb.from('deklaratsiyalar').insert({
-    dek_raqami: dek, sana: sana || null, jonatuvchi: jon, qabul: qab,
-    mashina: mash, summa_usd: sum, xizmat_haqi: sum * rate / 100, foiz: rate
+async function addRow(){
+  const dek=document.getElementById('inDek').value.trim();
+  const sana=document.getElementById('inSana').value.trim();
+  const jon=document.getElementById('inJon').value.trim();
+  const qab=document.getElementById('inQab').value.trim();
+  const mash=document.getElementById('inMash').value.trim();
+  const sum=parseFloat(document.getElementById('inSum').value);
+  const bolim=document.getElementById('inBolim').value;
+  document.getElementById('addMsg').textContent='';
+  document.getElementById('addErr').textContent='';
+  if(!dek||!sum){document.getElementById('addErr').textContent='Deklaratsiya va summa majburiy!';return;}
+  const rate=getRate();
+  const {error}=await sb.from('deklaratsiyalar').insert({
+    dek_raqami:dek,sana:sana||null,jonatuvchi:jon,qabul:qab,
+    mashina:mash,summa_usd:sum,xizmat_haqi:sum*rate/100,foiz:rate,bolim:bolim||''
   });
-  if (error) { document.getElementById('addErr').textContent = 'Xato: ' + error.message; return; }
-  ['inDek','inSana','inJon','inQab','inMash','inSum'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('addMsg').textContent = 'Saqlandi!';
-  setTimeout(() => document.getElementById('addMsg').textContent = '', 2500);
+  if(error){document.getElementById('addErr').textContent='Xato: '+error.message;return;}
+  ['inDek','inSana','inJon','inQab','inMash','inSum'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('addMsg').textContent='Saqlandi!';
+  setTimeout(()=>document.getElementById('addMsg').textContent='',2500);
   await loadData();
 }
 
-// ---- EXCEL IMPORT ----
-function handleDrop(e) {
+// ---- IMPORT ----
+function handleDrop(e){
   e.preventDefault();
   document.getElementById('dropZone').classList.remove('drag');
-  const file = e.dataTransfer.files[0];
-  if (file) handleFile(file);
+  const file=e.dataTransfer.files[0];
+  if(file)handleFile(file);
 }
 
-async function handleFile(file) {
-  if (!file) return;
-  const msg = document.getElementById('importMsg');
-  msg.style.color = 'var(--muted)';
-  msg.textContent = 'Fayl o\'qilmoqda...';
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const wb   = XLSX.read(e.target.result, { type: 'array' });
-      const ws   = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-      const rate = getRate();
-      const inserts = [];
-      for (let i = 1; i < rows.length; i++) {
-        const r = rows[i];
-        const sum = parseFloat(String(r[6]).replace(',', '.')) || 0;
-        if (!sum) continue;
-        const sana = r[4] !== undefined ? String(r[4]).trim() : '';
+async function handleFile(file){
+  if(!file)return;
+  const bolim=document.getElementById('importBolim').value;
+  const msg=document.getElementById('importMsg');
+  if(!bolim){msg.style.color='var(--red)';msg.textContent='Avval bo\'lim tanlang!';return;}
+  msg.style.color='var(--muted)';msg.textContent='Fayl o\'qilmoqda...';
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      const rate=getRate();
+      const inserts=[];
+      for(let i=1;i<rows.length;i++){
+        const r=rows[i];
+        const sum=parseFloat(String(r[6]).replace(',','.'))||0;
+        if(!sum)continue;
+        const sana=r[4]!==undefined?String(r[4]).trim():'';
         inserts.push({
-          dek_raqami: String(r[1] || ''),
-          jonatuvchi: String(r[2] || ''),
-          qabul:      String(r[3] || ''),
-          sana,
-          mashina:    String(r[5] || ''),
-          summa_usd:  sum,
-          xizmat_haqi: sum * rate / 100,
-          foiz:       rate
+          dek_raqami:String(r[1]||''),jonatuvchi:String(r[2]||''),qabul:String(r[3]||''),
+          sana,mashina:String(r[5]||''),summa_usd:sum,xizmat_haqi:sum*rate/100,foiz:rate,bolim
         });
       }
-      if (!inserts.length) { msg.style.color = 'var(--red)'; msg.textContent = 'Ma\'lumot topilmadi!'; return; }
-      const { error } = await sb.from('deklaratsiyalar').insert(inserts);
-      if (error) { msg.style.color = 'var(--red)'; msg.textContent = 'Xato: ' + error.message; return; }
-      msg.style.color = 'var(--green)';
-      msg.textContent = `${inserts.length} ta qator muvaffaqiyatli yuklandi!`;
+      if(!inserts.length){msg.style.color='var(--red)';msg.textContent='Ma\'lumot topilmadi!';return;}
+      const {error}=await sb.from('deklaratsiyalar').insert(inserts);
+      if(error){msg.style.color='var(--red)';msg.textContent='Xato: '+error.message;return;}
+      msg.style.color='var(--green)';msg.textContent=inserts.length+' ta qator "'+bolim+'" bo\'limiga yuklandi!';
       await loadData();
-    } catch(err) {
-      msg.style.color = 'var(--red)';
-      msg.textContent = 'Fayl o\'qishda xato: ' + err.message;
-    }
+    }catch(err){msg.style.color='var(--red)';msg.textContent='Xato: '+err.message;}
   };
   reader.readAsArrayBuffer(file);
 }
 
-// ---- TABS ----
-function switchTab(name, btn) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('sec-' + name).classList.add('active');
-  btn.classList.add('active');
-  if (name === 'grafik') renderChart();
-}
-
-document.getElementById('rateInput').addEventListener('input', refresh);
-
-function downloadShablon() {
-  const wb = XLSX.utils.book_new();
-  const header = ['№','Deklaratsiya raqami',"Jo'natuvchi",'Qabul qiluvchi','Sana va vaqt','Mashina raqami','Summa (USD)'];
-  const namuna = [
-    [1,'EK20260057310','AGROTEX LLC','IMPORT TRADE GmbH','12.03.2026 10:30','50517LBA / 500646BA',13783.20],
-    [2,'EK20260057311','NEXTTEX OOO','EUROTRADE AG','18.03.2026 14:15','50621AMC / 500700AC',8420.50],
+function downloadShablon(){
+  const header=['№','Deklaratsiya raqami',"Jo'natuvchi",'Qabul qiluvchi','Sana (dd/mm/yyyy)','Mashina raqami','Summa (USD)'];
+  const namuna=[
+    [1,'EK20260057310','AGROTEX LLC','IMPORT TRADE GmbH','02/03/2026','50517LBA / 500646BA',13783.20],
+    [2,'EK20260057311','NEXTTEX OOO','EUROTRADE AG','18/03/2026','50621AMC / 500700AC',8420.50],
   ];
-  const ws = XLSX.utils.aoa_to_sheet([header, ...namuna]);
-  ws['!cols'] = [5,28,30,30,22,22,16].map(w => ({ wch: w }));
-  XLSX.utils.book_append_sheet(wb, ws, 'Deklaratsiyalar');
-  XLSX.writeFile(wb, 'shablon.xlsx');
+  const ws=XLSX.utils.aoa_to_sheet([header,...namuna]);
+  ws['!cols']=[5,28,30,30,16,22,16].map(w=>({wch:w}));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Deklaratsiyalar');
+  XLSX.writeFile(wb,'shablon.xlsx');
 }
 
-async function removeDuplicates() {
-  const msg = document.getElementById('dupMsg');
-  msg.style.color = 'var(--muted)';
-  msg.textContent = 'Tekshirilmoqda...';
-  const { data, error } = await sb.from('deklaratsiyalar').select('id, dek_raqami').order('id', { ascending: true });
-  if (error) { msg.style.color = 'var(--red)'; msg.textContent = 'Xato: ' + error.message; return; }
-  const seen = {};
-  const toDelete = [];
-  data.forEach(r => {
-    const key = (r.dek_raqami || '').trim();
-    if (!key) return;
-    if (seen[key] !== undefined) {
-      toDelete.push(r.id);
-    } else {
-      seen[key] = r.id;
-    }
+async function removeDuplicates(){
+  const msg=document.getElementById('dupMsg');
+  msg.style.color='var(--muted)';msg.textContent='Tekshirilmoqda...';
+  const {data,error}=await sb.from('deklaratsiyalar').select('id,dek_raqami').order('id',{ascending:true});
+  if(error){msg.style.color='var(--red)';msg.textContent='Xato: '+error.message;return;}
+  const seen={};const toDelete=[];
+  data.forEach(r=>{
+    const key=(r.dek_raqami||'').trim();
+    if(!key)return;
+    if(seen[key]!==undefined)toDelete.push(r.id);
+    else seen[key]=r.id;
   });
-  if (!toDelete.length) {
-    msg.style.color = 'var(--green)';
-    msg.textContent = 'Dublikat topilmadi!';
-    return;
-  }
-  if (!confirm(toDelete.length + " ta dublikat topildi. O'chirilsinmi?")) { msg.textContent = ''; return; }
-  const { error: delError } = await sb.from('deklaratsiyalar').delete().in('id', toDelete);
-  if (delError) { msg.style.color = 'var(--red)'; msg.textContent = 'Xato: ' + delError.message; return; }
-  msg.style.color = 'var(--green)';
-  msg.textContent = toDelete.length + " ta dublikat o'chirildi!";
+  if(!toDelete.length){msg.style.color='var(--green)';msg.textContent='Dublikat topilmadi!';return;}
+  if(!confirm(toDelete.length+" ta dublikat topildi. O'chirilsinmi?"))return;
+  await sb.from('deklaratsiyalar').delete().in('id',toDelete);
+  msg.style.color='var(--green)';msg.textContent=toDelete.length+" ta dublikat o'chirildi!";
   await loadData();
 }
+
+// ---- TABS ----
+function switchTab(name,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='grafik')renderChart();
+}
+
+document.getElementById('rateInput').addEventListener('input',refresh);
 </script>
 </body>
 </html>
