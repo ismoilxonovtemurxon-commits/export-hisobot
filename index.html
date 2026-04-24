@@ -81,6 +81,8 @@ tr:hover td{background:var(--bg)}
 .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;background:var(--blue-light);color:var(--blue);font-weight:500}
 .badge-bolim{background:#fef3c7;color:#92400e;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500}
 .green-txt{color:var(--green);font-weight:500}
+.badge-hisoblangan{background:#dcfce7;color:#166534;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;cursor:pointer;border:none}
+.badge-hisoblanmagan{background:#fef9c3;color:#854d0e;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;cursor:pointer;border:none}
 .empty-state{text-align:center;padding:48px;color:var(--muted);font-size:13px}
 
 /* BUTTONS */
@@ -183,7 +185,7 @@ tr:hover td{background:var(--bg)}
         <table>
           <thead><tr>
             <th><input type="checkbox" id="checkAll" onclick="toggleAll(this)" style="cursor:pointer;width:15px;height:15px"></th>
-            <th>№</th><th>Bo'lim</th><th>Deklaratsiya</th><th>Jo'natuvchi</th><th>Qabul qiluvchi</th><th>Sana</th><th>Mashina</th>
+            <th>№</th><th>Status</th><th>Bo'lim</th><th>Deklaratsiya</th><th>Jo'natuvchi</th><th>Qabul qiluvchi</th><th>Sana</th><th>Mashina</th>
             <th style="text-align:right">Summa (USD)</th><th style="text-align:right">Xizmat haqi</th><th>Amal</th>
           </tr></thead>
           <tbody id="mainTbody"></tbody>
@@ -201,6 +203,12 @@ tr:hover td{background:var(--bg)}
     <!-- FILTER VA YUKLAB OLISH -->
     <div id="sec-filter" class="section">
       <div class="filter-bar">
+        <label>Status:</label>
+        <select id="fStatus" onchange="applyFilter()" style="min-width:140px">
+          <option value="">Barchasi</option>
+          <option value="hisoblanmagan">Hisoblanmagan</option>
+          <option value="hisoblangan">Hisoblangan</option>
+        </select>
         <label>Bo'lim:</label>
         <select id="fBolim" onchange="applyFilter()" style="min-width:130px">
           <option value="">Barchasi</option>
@@ -222,7 +230,7 @@ tr:hover td{background:var(--bg)}
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>№</th><th>Bo'lim</th><th>Deklaratsiya</th><th>Jo'natuvchi</th><th>Qabul qiluvchi</th><th>Sana</th><th>Mashina</th>
+            <th>№</th><th>Status</th><th>Bo'lim</th><th>Deklaratsiya</th><th>Jo'natuvchi</th><th>Qabul qiluvchi</th><th>Sana</th><th>Mashina</th>
             <th style="text-align:right">Summa</th><th style="text-align:right">Xizmat haqi</th>
           </tr></thead>
           <tbody id="filterTbody"></tbody>
@@ -294,6 +302,23 @@ tr:hover td{background:var(--bg)}
         </div>
 
         <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="form-card">
+            <h3>Status import (Hisoblangan)</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Faqat deklaratsiya raqamlari yozilgan Excel faylni yuklang. Shu raqamlarning statusi "Hisoblangan" ga o'zgaradi.</p>
+            <button class="btn btn-blue" onclick="downloadStatusShablon()" style="display:inline-flex;align-items:center;gap:8px;margin-bottom:12px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Status shablon.xlsx
+            </button>
+            <div class="drop-zone" id="statusDropZone" onclick="document.getElementById('statusFile').click()"
+              ondragover="event.preventDefault();this.classList.add('drag')"
+              ondragleave="this.classList.remove('drag')"
+              ondrop="handleStatusDrop(event)" style="padding:20px">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.5" style="margin:0 auto;display:block"><path d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <p style="margin-top:6px">Status faylni tashlang yoki bosing</p>
+            </div>
+            <input type="file" id="statusFile" accept=".xlsx" style="display:none" onchange="handleStatusFile(this.files[0])">
+            <div style="font-size:13px;margin-top:10px;min-height:20px" id="statusImportMsg"></div>
+          </div>
           <div class="form-card">
             <h3>Shablon yuklab olish</h3>
             <p style="font-size:13px;color:var(--muted);margin-bottom:12px">To'ldirish uchun tayyor Excel shablon.</p>
@@ -480,8 +505,11 @@ function renderMain(){
     cb.addEventListener('change',()=>toggleRow(r.id,cb,tr));
     const tdCb=document.createElement('td');tdCb.style.textAlign='center';tdCb.appendChild(cb);
     tr.appendChild(tdCb);
+    const st=r.status||'hisoblanmagan';
+    const stLabel=st==='hisoblangan'?'Hisoblangan':'Hisoblanmagan';
     tr.insertAdjacentHTML('beforeend',`
       <td>${i+1}</td>
+      <td><button class="badge-${st}" onclick="toggleStatus(${r.id},'${st}')">${stLabel}</button></td>
       <td><span class="badge-bolim">${r.bolim||'-'}</span></td>
       <td>${r.dek_raqami||'-'}</td>
       <td>${r.jonatuvchi||'-'}</td>
@@ -532,6 +560,12 @@ async function deleteSelected(){
   await loadData();
 }
 
+async function toggleStatus(id, current){
+  const newStatus = current==='hisoblangan' ? 'hisoblanmagan' : 'hisoblangan';
+  await sb.from('deklaratsiyalar').update({status: newStatus}).eq('id', id);
+  await loadData();
+}
+
 async function deleteRow(id){
   if(!confirm("O'chirilsinmi?"))return;
   await sb.from('deklaratsiyalar').delete().eq('id',id);
@@ -557,7 +591,9 @@ function applyFilter(){
   const to=parseSana(document.getElementById('fTo').value);
   const min=parseFloat(document.getElementById('fMin').value)||0;
 
+  const status=(document.getElementById('fStatus')||{value:''}).value;
   filteredRows=allRows.filter(r=>{
+    if(status&&(r.status||'hisoblanmagan')!==status)return false;
     if(bolim&&!(r.bolim||'').toLowerCase().includes(bolim))return false;
     if(exp&&!(r.jonatuvchi||'').toLowerCase().includes(exp))return false;
     if(qab&&!(r.qabul||'').toLowerCase().includes(qab))return false;
@@ -584,8 +620,10 @@ function applyFilter(){
     const f=s*rate/100;
     tSum+=s;tFee+=f;
     const tr=document.createElement('tr');
-    tr.innerHTML=`
+    const fst=r.status||'hisoblanmagan';
+    tr.insertAdjacentHTML('beforeend',`
       <td>${i+1}</td>
+      <td><span class="badge-${fst}" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500">${fst==='hisoblangan'?'Hisoblangan':'Hisoblanmagan'}</span></td>
       <td><span class="badge-bolim">${r.bolim||'-'}</span></td>
       <td>${r.dek_raqami||'-'}</td>
       <td>${r.jonatuvchi||'-'}</td>
@@ -593,7 +631,7 @@ function applyFilter(){
       <td>${r.sana||'-'}</td>
       <td><span class="badge">${r.mashina||'-'}</span></td>
       <td style="text-align:right">${fmt(s)}</td>
-      <td style="text-align:right" class="green-txt">${fmt(f)}</td>`;
+      <td style="text-align:right" class="green-txt">${fmt(f)}</td>`);
     tbody.appendChild(tr);
   });
   document.getElementById('ftSum').textContent=fmt(tSum);
@@ -601,7 +639,7 @@ function applyFilter(){
 }
 
 function resetFilter(){
-  ['fBolim','fExport','fQabul','fFrom','fTo','fMin'].forEach(id=>{
+  ['fStatus','fBolim','fExport','fQabul','fFrom','fTo','fMin'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.value='';
   });
@@ -716,6 +754,70 @@ async function handleFile(file){
       const {error}=await sb.from('deklaratsiyalar').insert(inserts);
       if(error){msg.style.color='var(--red)';msg.textContent='Xato: '+error.message;return;}
       msg.style.color='var(--green)';msg.textContent=inserts.length+' ta qator "'+bolim+'" bo\'limiga yuklandi!';
+      await loadData();
+    }catch(err){msg.style.color='var(--red)';msg.textContent='Xato: '+err.message;}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function downloadStatusShablon(){
+  const header=['Deklaratsiya raqami'];
+  const namuna=[['EK20260057310'],['EK20260057311'],['EK20260057312']];
+  const ws=XLSX.utils.aoa_to_sheet([header,...namuna]);
+  ws['!cols']=[{wch:28}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Hisoblangan');
+  XLSX.writeFile(wb,'status_shablon.xlsx');
+}
+
+function handleStatusDrop(e){
+  e.preventDefault();
+  document.getElementById('statusDropZone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file)handleStatusFile(file);
+}
+
+async function handleStatusFile(file){
+  if(!file)return;
+  const msg=document.getElementById('statusImportMsg');
+  msg.style.color='var(--muted)';msg.textContent='Fayl o'qilmoqda...';
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      // Deklaratsiya raqamlarini olish (1-ustun, sarlavhasiz)
+      const raqamlar=[];
+      for(let i=1;i<rows.length;i++){
+        const r=String(rows[i][0]||'').trim();
+        if(r)raqamlar.push(r);
+      }
+      if(!raqamlar.length){msg.style.color='var(--red)';msg.textContent='Raqam topilmadi!';return;}
+      msg.textContent=raqamlar.length+' ta raqam o'qildi. Yangilanmoqda...';
+
+      // Bazada shu raqamlarni topib status o'zgartirish
+      const {data:existing,error:selErr}=await sb.from('deklaratsiyalar')
+        .select('id,dek_raqami')
+        .in('dek_raqami',raqamlar);
+      if(selErr){msg.style.color='var(--red)';msg.textContent='Xato: '+selErr.message;return;}
+
+      if(!existing||!existing.length){
+        msg.style.color='var(--red)';
+        msg.textContent='Bazada bu raqamlar topilmadi!';
+        return;
+      }
+
+      const ids=existing.map(r=>r.id);
+      const {error:updErr}=await sb.from('deklaratsiyalar')
+        .update({status:'hisoblangan'})
+        .in('id',ids);
+      if(updErr){msg.style.color='var(--red)';msg.textContent='Xato: '+updErr.message;return;}
+
+      const topilmagan=raqamlar.filter(r=>!existing.find(e=>e.dek_raqami===r));
+      let xabar=existing.length+' ta deklaratsiya "Hisoblangan" ga o'zgartirildi!';
+      if(topilmagan.length)xabar+=' ('+topilmagan.length+' ta bazada topilmadi)';
+      msg.style.color='var(--green)';msg.textContent=xabar;
       await loadData();
     }catch(err){msg.style.color='var(--red)';msg.textContent='Xato: '+err.message;}
   };
