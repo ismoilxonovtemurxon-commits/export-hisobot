@@ -356,7 +356,7 @@ tr:hover td{background:var(--bg)}
   </div>
 </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -553,7 +553,7 @@ function clearSelection(){selectedIds.clear();renderMain();}
 
 async function deleteSelected(){
   if(!selectedIds.size)return;
-  if(!confirm(selectedIds.size+" ta yozuv o'chirilsinmi?"))return;
+  if(!confirm(selectedIds.size+" ta yozuv o\'chirilsinmi?"))return;
   const ids=[...selectedIds];
   await sb.from('deklaratsiyalar').delete().in('id',ids);
   selectedIds.clear();
@@ -780,7 +780,7 @@ function handleStatusDrop(e){
 async function handleStatusFile(file){
   if(!file)return;
   const msg=document.getElementById('statusImportMsg');
-  msg.style.color='var(--muted)';msg.textContent='Fayl o'qilmoqda...';
+  msg.style.color='var(--muted)';msg.textContent='Fayl o\'qilmoqda...';
   const reader=new FileReader();
   reader.onload=async(e)=>{
     try{
@@ -794,7 +794,7 @@ async function handleStatusFile(file){
         if(r)raqamlar.push(r);
       }
       if(!raqamlar.length){msg.style.color='var(--red)';msg.textContent='Raqam topilmadi!';return;}
-      msg.textContent=raqamlar.length+' ta raqam o'qildi. Yangilanmoqda...';
+      msg.textContent=raqamlar.length+' ta raqam o\'qildi. Yangilanmoqda...';
 
       // Bazada shu raqamlarni topib status o'zgartirish
       const {data:existing,error:selErr}=await sb.from('deklaratsiyalar')
@@ -815,7 +815,7 @@ async function handleStatusFile(file){
       if(updErr){msg.style.color='var(--red)';msg.textContent='Xato: '+updErr.message;return;}
 
       const topilmagan=raqamlar.filter(r=>!existing.find(e=>e.dek_raqami===r));
-      let xabar=existing.length+' ta deklaratsiya "Hisoblangan" ga o'zgartirildi!';
+      let xabar=existing.length+' ta deklaratsiya "Hisoblangan" ga o\'zgartirildi!';
       if(topilmagan.length)xabar+=' ('+topilmagan.length+' ta bazada topilmadi)';
       msg.style.color='var(--green)';msg.textContent=xabar;
       await loadData();
@@ -852,7 +852,7 @@ async function removeDuplicates(){
   if(!toDelete.length){msg.style.color='var(--green)';msg.textContent='Dublikat topilmadi!';return;}
   if(!confirm(toDelete.length+" ta dublikat topildi. O'chirilsinmi?"))return;
   await sb.from('deklaratsiyalar').delete().in('id',toDelete);
-  msg.style.color='var(--green)';msg.textContent=toDelete.length+" ta dublikat o'chirildi!";
+  msg.style.color='var(--green)';msg.textContent=toDelete.length+" ta dublikat o\'chirildi!";
   await loadData();
 }
 
