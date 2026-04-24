@@ -114,6 +114,12 @@ tr:hover td{background:var(--bg)}
 .bolim-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--blue-light);color:var(--blue);border-radius:20px;font-size:13px;font-weight:500}
 .bolim-chip button{border:none;background:none;cursor:pointer;color:var(--red);font-size:14px;line-height:1;padding:0}
 
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:16px;padding:28px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:20px}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:4px}
 @media(max-width:700px){.cards{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.main{padding:16px}}
 </style>
 </head>
@@ -356,6 +362,33 @@ tr:hover td{background:var(--bg)}
   </div>
 </div>
 
+<!-- TAHRIRLASH MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h3>Deklaratsiyani tahrirlash</h3>
+    <div class="modal-grid">
+      <div class="fi"><label>Deklaratsiya raqami</label><input type="text" id="editDek" placeholder="EK20260057310"></div>
+      <div class="fi"><label>Sana (dd/mm/yyyy)</label><input type="text" id="editSana" placeholder="02/03/2026"></div>
+      <div class="fi"><label>Jo'natuvchi</label><input type="text" id="editJon"></div>
+      <div class="fi"><label>Qabul qiluvchi</label><input type="text" id="editQab"></div>
+      <div class="fi"><label>Mashina raqami</label><input type="text" id="editMash"></div>
+      <div class="fi"><label>Summa (USD)</label><input type="number" id="editSum" step="0.01"></div>
+      <div class="fi"><label>Bo'lim</label><select id="editBolim"><option value="">-- Bo'lim --</option></select></div>
+      <div class="fi"><label>Status</label>
+        <select id="editStatus">
+          <option value="hisoblanmagan">Hisoblanmagan</option>
+          <option value="hisoblangan">Hisoblangan</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Bekor qilish</button>
+      <button class="btn btn-blue" onclick="saveEdit()">Saqlash</button>
+    </div>
+    <div style="font-size:12px;margin-top:10px;min-height:16px" id="editMsg"></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -509,7 +542,7 @@ function renderMain(){
     const stLabel=st==='hisoblangan'?'Hisoblangan':'Hisoblanmagan';
     tr.insertAdjacentHTML('beforeend',`
       <td>${i+1}</td>
-      <td><button class="badge-${st}" onclick="toggleStatus(${r.id},'${st}')">${stLabel}</button></td>
+      <td><span class="badge-${st}">${stLabel}</span></td>
       <td><span class="badge-bolim">${r.bolim||'-'}</span></td>
       <td>${r.dek_raqami||'-'}</td>
       <td>${r.jonatuvchi||'-'}</td>
@@ -518,7 +551,10 @@ function renderMain(){
       <td><span class="badge">${r.mashina||'-'}</span></td>
       <td style="text-align:right">${fmt(s)}</td>
       <td style="text-align:right" class="green-txt">${fmt(f)}</td>
-      <td><button onclick="deleteRow(${r.id})" style="border:none;background:none;cursor:pointer;color:#ef4444;font-size:13px">O'chirish</button></td>`);
+      <td style="white-space:nowrap">
+        <button onclick="openEdit(${r.id})" style="border:none;background:none;cursor:pointer;color:var(--blue);font-size:13px;margin-right:6px">Tahrirlash</button>
+        <button onclick="deleteRow(${r.id})" style="border:none;background:none;cursor:pointer;color:#ef4444;font-size:13px">O'chirish</button>
+      </td>`);
     tbody.appendChild(tr);
   });
   document.getElementById('tSum').textContent=fmt(tSum);
@@ -560,11 +596,56 @@ async function deleteSelected(){
   await loadData();
 }
 
-async function toggleStatus(id, current){
-  const newStatus = current==='hisoblangan' ? 'hisoblanmagan' : 'hisoblangan';
-  await sb.from('deklaratsiyalar').update({status: newStatus}).eq('id', id);
+let editId = null;
+
+function openEdit(id){
+  const r = allRows.find(x=>x.id===id);
+  if(!r)return;
+  editId = id;
+  document.getElementById('editDek').value = r.dek_raqami||'';
+  document.getElementById('editSana').value = r.sana||'';
+  document.getElementById('editJon').value = r.jonatuvchi||'';
+  document.getElementById('editQab').value = r.qabul||'';
+  document.getElementById('editMash').value = r.mashina||'';
+  document.getElementById('editSum').value = r.summa_usd||'';
+  document.getElementById('editStatus').value = r.status||'hisoblanmagan';
+  document.getElementById('editMsg').textContent = '';
+  // Bo'limlar selectini to'ldirish
+  const sel = document.getElementById('editBolim');
+  sel.innerHTML = '<option value="">-- Bo\'lim --</option>' + bolimlar.map(b=>`<option value="${b.nom}">${b.nom}</option>`).join('');
+  sel.value = r.bolim||'';
+  document.getElementById('editModal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('editModal').classList.remove('open');
+  editId = null;
+}
+
+async function saveEdit(){
+  if(!editId)return;
+  const rate = getRate();
+  const sum = parseFloat(document.getElementById('editSum').value)||0;
+  const {error} = await sb.from('deklaratsiyalar').update({
+    dek_raqami: document.getElementById('editDek').value.trim(),
+    sana: document.getElementById('editSana').value.trim()||null,
+    jonatuvchi: document.getElementById('editJon').value.trim(),
+    qabul: document.getElementById('editQab').value.trim(),
+    mashina: document.getElementById('editMash').value.trim(),
+    summa_usd: sum,
+    xizmat_haqi: sum*rate/100,
+    bolim: document.getElementById('editBolim').value,
+    status: document.getElementById('editStatus').value,
+  }).eq('id', editId);
+  if(error){document.getElementById('editMsg').style.color='var(--red)';document.getElementById('editMsg').textContent='Xato: '+error.message;return;}
+  closeModal();
   await loadData();
 }
+
+// Modal tashqarisiga bosganida yopish
+document.getElementById('editModal').addEventListener('click', function(e){
+  if(e.target===this)closeModal();
+});
 
 async function deleteRow(id){
   if(!confirm("O'chirilsinmi?"))return;
