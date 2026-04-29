@@ -926,14 +926,19 @@ async function removeDuplicates(){
   const seen={};const toDelete=[];
   data.forEach(r=>{
     const key=(r.dek_raqami||'').trim();
-    if(!key)return;
-    if(seen[key]!==undefined)toDelete.push(r.id);
-    else seen[key]=r.id;
+    if(!key||key==='-')return;
+    if(seen[key]!==undefined){
+      toDelete.push(r.id);
+    } else {
+      seen[key]=r.id;
+    }
   });
   if(!toDelete.length){msg.style.color='var(--green)';msg.textContent='Dublikat topilmadi!';return;}
-  if(!confirm(toDelete.length+" ta dublikat topildi. O'chirilsinmi?"))return;
-  await sb.from('deklaratsiyalar').delete().in('id',toDelete);
-  msg.style.color='var(--green)';msg.textContent=toDelete.length+" ta dublikat o\'chirildi!";
+  const dupRaqamlar=data.filter(r=>toDelete.includes(r.id)).map(r=>r.dek_raqami).join('\n');
+  if(!confirm(toDelete.length+' ta dublikat topildi.\nO\'chiriladigan raqamlar:\n'+dupRaqamlar+'\n\nBirinchi yozuvlar saqlanib qoladi. Davom etilsinmi?'))return;
+  const {error:delErr}=await sb.from('deklaratsiyalar').delete().in('id',toDelete);
+  if(delErr){msg.style.color='var(--red)';msg.textContent='Xato: '+delErr.message;return;}
+  msg.style.color='var(--green)';msg.textContent=toDelete.length+' ta dublikat o\'chirildi!';
   await loadData();
 }
 
