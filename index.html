@@ -181,6 +181,27 @@ tr:hover td{background:var(--bg)}
 
     <!-- HISOBOT -->
     <div id="sec-hisobot" class="section active">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px">
+        <label style="font-size:12px;color:var(--muted)">Bo'lim:</label>
+        <select id="mBolim" onchange="applyMainFilter()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--bg);min-width:120px">
+          <option value="">Barchasi</option>
+        </select>
+        <label style="font-size:12px;color:var(--muted)">Status:</label>
+        <select id="mStatus" onchange="applyMainFilter()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--bg);min-width:140px">
+          <option value="">Barchasi</option>
+          <option value="hisoblanmagan">Hisoblanmagan</option>
+          <option value="hisoblangan">Hisoblangan</option>
+        </select>
+        <label style="font-size:12px;color:var(--muted)">Sahifada:</label>
+        <select id="perPage" onchange="currentPage=0;renderMain()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--bg)">
+          <option value="50">50 ta</option>
+          <option value="100" selected>100 ta</option>
+          <option value="200">200 ta</option>
+          <option value="500">500 ta</option>
+        </select>
+        <span id="mainFilterInfo" style="font-size:12px;color:var(--muted);margin-left:auto"></span>
+        <button class="btn" onclick="resetMainFilter()">Tozalash</button>
+      </div>
       <div class="bulk-bar" id="bulkBar">
         <span id="bulkCount" style="font-size:13px;font-weight:500;color:var(--red)"></span>
         <span style="font-size:13px;color:var(--muted)">ta tanlandi</span>
@@ -204,6 +225,7 @@ tr:hover td{background:var(--bg)}
         </table>
         <div id="emptyState" class="empty-state">Ma'lumot yo'q.</div>
       </div>
+      <div id="paginationBar" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap"></div>
     </div>
 
     <!-- FILTER VA YUKLAB OLISH -->
@@ -402,6 +424,8 @@ let filteredRows = [];
 let selectedIds = new Set();
 let bolimlar = [];
 let myChart = null;
+let currentPage = 0;
+let mainFiltered = [];
 
 // ---- AUTH ----
 function togglePass(){
@@ -458,7 +482,7 @@ function renderBolimlar(){
 }
 
 function updateBolimSelects(){
-  const selects=['fBolim','importBolim','inBolim'];
+  const selects=['fBolim','mBolim','importBolim','inBolim'];
   selects.forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel)return;
@@ -490,9 +514,21 @@ async function deleteBolim(id,nom){
 
 // ---- DATA ----
 async function loadData(){
-  const {data,error}=await sb.from('deklaratsiyalar').select('*').order('yaratilgan',{ascending:false});
-  if(error){console.error(error);return;}
-  allRows=data||[];
+  let allData=[];
+  let from=0;
+  const size=1000;
+  while(true){
+    const {data,error}=await sb.from('deklaratsiyalar')
+      .select('*')
+      .order('yaratilgan',{ascending:false})
+      .range(from, from+size-1);
+    if(error){console.error(error);break;}
+    if(!data||data.length===0)break;
+    allData=[...allData,...data];
+    if(data.length<size)break;
+    from+=size;
+  }
+  allRows=allData;
   refresh();
 }
 
@@ -517,16 +553,55 @@ function updateCards(){
   document.getElementById('cAvg').textContent=fmt(avg);
 }
 
+function applyMainFilter(){
+  currentPage=0;
+  renderMain();
+}
+
+function resetMainFilter(){
+  const mb=document.getElementById('mBolim');
+  const ms=document.getElementById('mStatus');
+  if(mb)mb.value='';
+  if(ms)ms.value='';
+  currentPage=0;
+  renderMain();
+}
+
 function renderMain(){
   const rate=getRate();
   const tbody=document.getElementById('mainTbody');
   tbody.innerHTML='';
-  document.getElementById('emptyState').style.display=allRows.length?'none':'block';
-  document.getElementById('totalRow').style.display=allRows.length?'':'none';
+
+  // Bo'lim va status filter
+  const mBolim=(document.getElementById('mBolim')||{value:''}).value;
+  const mStatus=(document.getElementById('mStatus')||{value:''}).value;
+  mainFiltered=allRows.filter(r=>{
+    if(mBolim&&(r.bolim||'')!==mBolim)return false;
+    if(mStatus&&(r.status||'hisoblanmagan')!==mStatus)return false;
+    return true;
+  });
+
+  const perPage=parseInt((document.getElementById('perPage')||{value:'100'}).value)||100;
+  const totalPages=Math.ceil(mainFiltered.length/perPage);
+  const pageRows=mainFiltered.slice(currentPage*perPage,(currentPage+1)*perPage);
+
+  document.getElementById('emptyState').style.display=mainFiltered.length?'none':'block';
+  document.getElementById('totalRow').style.display=mainFiltered.length?'':'none';
   const ca=document.getElementById('checkAll');
   if(ca)ca.checked=false;
+
+  // Info
+  const info=document.getElementById('mainFilterInfo');
+  if(info)info.textContent=mainFiltered.length+' ta / '+(currentPage*perPage+1)+'-'+Math.min((currentPage+1)*perPage,mainFiltered.length);
+
   let tSum=0,tFee=0;
-  allRows.forEach((r,i)=>{
+  mainFiltered.forEach(r=>{tSum+=parseFloat(r.summa_usd)||0;tFee+=tSum*0;});
+  tSum=0;tFee=0;
+  mainFiltered.forEach(r=>{const s=parseFloat(r.summa_usd)||0;tSum+=s;tFee+=s*rate/100;});
+  document.getElementById('tSum').textContent=fmt(tSum);
+  document.getElementById('tFee').textContent=fmt(tFee);
+
+  pageRows.forEach((r,i)=>{
     const s=parseFloat(r.summa_usd)||0;
     const f=s*rate/100;
     tSum+=s;tFee+=f;
@@ -541,7 +616,7 @@ function renderMain(){
     const st=r.status||'hisoblanmagan';
     const stLabel=st==='hisoblangan'?'Hisoblangan':'Hisoblanmagan';
     tr.insertAdjacentHTML('beforeend',`
-      <td>${i+1}</td>
+      <td>${currentPage*perPage+i+1}</td>
       <td><span class="badge-${st}">${stLabel}</span></td>
       <td><span class="badge-bolim">${r.bolim||'-'}</span></td>
       <td>${r.dek_raqami||'-'}</td>
@@ -557,9 +632,37 @@ function renderMain(){
       </td>`);
     tbody.appendChild(tr);
   });
-  document.getElementById('tSum').textContent=fmt(tSum);
-  document.getElementById('tFee').textContent=fmt(tFee);
   updateBulkBar();
+
+  // Pagination tugmalari
+  const bar=document.getElementById('paginationBar');
+  if(bar){
+    bar.innerHTML='';
+    if(totalPages>1){
+      const prevBtn=document.createElement('button');
+      prevBtn.className='btn';prevBtn.textContent='← Oldingi';
+      prevBtn.disabled=currentPage===0;
+      prevBtn.onclick=()=>{currentPage--;renderMain();};
+      bar.appendChild(prevBtn);
+
+      for(let p=0;p<totalPages;p++){
+        if(totalPages>7&&Math.abs(p-currentPage)>2&&p!==0&&p!==totalPages-1)continue;
+        const pb=document.createElement('button');
+        pb.textContent=p+1;
+        pb.style.cssText='padding:6px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;';
+        if(p===currentPage){pb.style.background='var(--blue)';pb.style.color='#fff';pb.style.borderColor='var(--blue)';}
+        else{pb.style.background='var(--surface)';pb.style.color='var(--text)';}
+        pb.onclick=(()=>{const pg=p;return()=>{currentPage=pg;renderMain();};})();
+        bar.appendChild(pb);
+      }
+
+      const nextBtn=document.createElement('button');
+      nextBtn.className='btn';nextBtn.textContent='Keyingi →';
+      nextBtn.disabled=currentPage>=totalPages-1;
+      nextBtn.onclick=()=>{currentPage++;renderMain();};
+      bar.appendChild(nextBtn);
+    }
+  }
 }
 
 function toggleRow(id,cb,tr){
@@ -921,7 +1024,20 @@ function downloadShablon(){
 async function removeDuplicates(){
   const msg=document.getElementById('dupMsg');
   msg.style.color='var(--muted)';msg.textContent='Tekshirilmoqda...';
-  const {data,error}=await sb.from('deklaratsiyalar').select('id,dek_raqami').order('id',{ascending:true});
+  let dupAllData=[];
+  let dupFrom=0;
+  while(true){
+    const {data:chunk,error:ce}=await sb.from('deklaratsiyalar')
+      .select('id,dek_raqami')
+      .order('id',{ascending:true})
+      .range(dupFrom,dupFrom+999);
+    if(ce||!chunk||chunk.length===0)break;
+    dupAllData=[...dupAllData,...chunk];
+    if(chunk.length<1000)break;
+    dupFrom+=1000;
+  }
+  const data=dupAllData;
+  const error=null;
   if(error){msg.style.color='var(--red)';msg.textContent='Xato: '+error.message;return;}
   const seen={};const toDelete=[];
   data.forEach(r=>{
