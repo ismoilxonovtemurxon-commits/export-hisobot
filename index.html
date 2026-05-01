@@ -199,6 +199,10 @@ tr:hover td{background:var(--bg)}
           <option value="200">200 ta</option>
           <option value="500">500 ta</option>
         </select>
+        <label style="font-size:12px;color:var(--muted)">Mashina:</label>
+        <input type="text" id="mMashina" placeholder="Raqam..." oninput="applyMainFilter()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;width:130px;background:var(--bg)">
+        <label style="font-size:12px;color:var(--muted)">Deklaratsiya:</label>
+        <input type="text" id="mDek" placeholder="EK..." oninput="applyMainFilter()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;width:130px;background:var(--bg)">
         <span id="mainFilterInfo" style="font-size:12px;color:var(--muted);margin-left:auto"></span>
         <button class="btn" onclick="resetMainFilter()">Tozalash</button>
       </div>
@@ -563,6 +567,10 @@ function resetMainFilter(){
   const ms=document.getElementById('mStatus');
   if(mb)mb.value='';
   if(ms)ms.value='';
+  const mm=document.getElementById('mMashina');
+  const md=document.getElementById('mDek');
+  if(mm)mm.value='';
+  if(md)md.value='';
   currentPage=0;
   renderMain();
 }
@@ -575,9 +583,13 @@ function renderMain(){
   // Bo'lim va status filter
   const mBolim=(document.getElementById('mBolim')||{value:''}).value;
   const mStatus=(document.getElementById('mStatus')||{value:''}).value;
+  const mMashina=(document.getElementById('mMashina')||{value:''}).value.toLowerCase();
+  const mDek=(document.getElementById('mDek')||{value:''}).value.toLowerCase();
   mainFiltered=allRows.filter(r=>{
     if(mBolim&&(r.bolim||'')!==mBolim)return false;
     if(mStatus&&(r.status||'hisoblanmagan')!==mStatus)return false;
+    if(mMashina&&!(r.mashina||'').toLowerCase().includes(mMashina))return false;
+    if(mDek&&!(r.dek_raqami||'').toLowerCase().includes(mDek))return false;
     return true;
   });
 
