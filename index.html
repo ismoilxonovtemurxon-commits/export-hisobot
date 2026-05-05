@@ -203,6 +203,8 @@ tr:hover td{background:var(--bg)}
         <input type="text" id="mMashina" placeholder="Raqam..." oninput="applyMainFilter()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;width:130px;background:var(--bg)">
         <label style="font-size:12px;color:var(--muted)">Deklaratsiya:</label>
         <input type="text" id="mDek" placeholder="EK..." oninput="applyMainFilter()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;width:130px;background:var(--bg)">
+        <label style="font-size:12px;color:var(--muted)">Mahsulot:</label>
+        <input type="text" id="mMahsulot" placeholder="Nomi..." oninput="applyMainFilter()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;width:130px;background:var(--bg)">
         <span id="mainFilterInfo" style="font-size:12px;color:var(--muted);margin-left:auto"></span>
         <button class="btn" onclick="resetMainFilter()">Tozalash</button>
       </div>
@@ -216,12 +218,12 @@ tr:hover td{background:var(--bg)}
         <table>
           <thead><tr>
             <th><input type="checkbox" id="checkAll" onclick="toggleAll(this)" style="cursor:pointer;width:15px;height:15px"></th>
-            <th>№</th><th>Status</th><th>Bo'lim</th><th>Deklaratsiya</th><th>Jo'natuvchi</th><th>Qabul qiluvchi</th><th>Sana</th><th>Mashina</th>
+            <th>№</th><th>Status</th><th>Bo'lim</th><th>Deklaratsiya</th><th>Jo'natuvchi</th><th>Qabul qiluvchi</th><th>Sana</th><th>Mashina</th><th>Mahsulot</th>
             <th style="text-align:right">Summa (USD)</th><th style="text-align:right">Xizmat haqi</th><th>Amal</th>
           </tr></thead>
           <tbody id="mainTbody"></tbody>
           <tfoot><tr class="tfoot-row" id="totalRow" style="display:none">
-            <td></td><td colspan="7" style="text-align:right;color:var(--muted)">Jami:</td>
+            <td></td><td colspan="8" style="text-align:right;color:var(--muted)">Jami:</td>
             <td style="text-align:right" id="tSum"></td>
             <td style="text-align:right;color:var(--green)" id="tFee"></td>
             <td></td>
@@ -571,6 +573,7 @@ function resetMainFilter(){
   const md=document.getElementById('mDek');
   if(mm)mm.value='';
   if(md)md.value='';
+  const mh=document.getElementById('mMahsulot');if(mh)mh.value='';
   currentPage=0;
   renderMain();
 }
@@ -590,6 +593,8 @@ function renderMain(){
     if(mStatus&&(r.status||'hisoblanmagan')!==mStatus)return false;
     if(mMashina&&!(r.mashina||'').toLowerCase().includes(mMashina))return false;
     if(mDek&&!(r.dek_raqami||'').toLowerCase().includes(mDek))return false;
+    const mMah=(document.getElementById('mMahsulot')||{value:''}).value.toLowerCase();
+    if(mMah&&!(r.mahsulot||'').toLowerCase().includes(mMah))return false;
     return true;
   });
 
@@ -636,6 +641,7 @@ function renderMain(){
       <td>${r.qabul||'-'}</td>
       <td>${r.sana||'-'}</td>
       <td><span class="badge">${r.mashina||'-'}</span></td>
+      <td>${r.mahsulot||'-'}</td>
       <td style="text-align:right">${fmt(s)}</td>
       <td style="text-align:right" class="green-txt">${fmt(f)}</td>
       <td style="white-space:nowrap">
@@ -722,6 +728,7 @@ function openEdit(id){
   document.getElementById('editJon').value = r.jonatuvchi||'';
   document.getElementById('editQab').value = r.qabul||'';
   document.getElementById('editMash').value = r.mashina||'';
+  const em=document.getElementById('editMahsulot');if(em)em.value=r.mahsulot||'';
   document.getElementById('editSum').value = r.summa_usd||'';
   document.getElementById('editStatus').value = r.status||'hisoblanmagan';
   document.getElementById('editMsg').textContent = '';
@@ -747,6 +754,7 @@ async function saveEdit(){
     jonatuvchi: document.getElementById('editJon').value.trim(),
     qabul: document.getElementById('editQab').value.trim(),
     mashina: document.getElementById('editMash').value.trim(),
+    mahsulot: (document.getElementById('editMahsulot')||{value:''}).value.trim(),
     summa_usd: sum,
     xizmat_haqi: sum*rate/100,
     bolim: document.getElementById('editBolim').value,
@@ -850,10 +858,10 @@ function exportFiltered(){
   const rows=filteredRows.map((r,i)=>{
     const s=parseFloat(r.summa_usd)||0;
     const f=parseFloat((s*rate/100).toFixed(2));
-    return[i+1,r.bolim||'',r.dek_raqami||'',r.jonatuvchi||'',r.qabul||'',r.sana||'',r.mashina||'',s,f];
+    return[i+1,r.bolim||'',r.dek_raqami||'',r.jonatuvchi||'',r.qabul||'',r.sana||'',r.mashina||'',r.mahsulot||'',s,f];
   });
   const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
-  ws['!cols']=[5,15,24,28,28,14,22,14,14].map(w=>({wch:w}));
+  ws['!cols']=[5,15,24,28,28,14,22,24,14,14].map(w=>({wch:w}));
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Hisobot');
   XLSX.writeFile(wb,'hisobot_'+new Date().toISOString().slice(0,10)+'.xlsx');
@@ -938,12 +946,12 @@ async function handleFile(file){
       const inserts=[];
       for(let i=1;i<rows.length;i++){
         const r=rows[i];
-        const sum=parseFloat(String(r[6]).replace(',','.'))||0;
+        const sum=parseFloat(String(r[7]).replace(',','.'))||0;
         if(!sum)continue;
         const sana=r[4]!==undefined?String(r[4]).trim():'';
         inserts.push({
           dek_raqami:String(r[1]||''),jonatuvchi:String(r[2]||''),qabul:String(r[3]||''),
-          sana,mashina:String(r[5]||''),summa_usd:sum,xizmat_haqi:sum*rate/100,foiz:rate,bolim
+          sana,mashina:String(r[5]||''),mahsulot:String(r[6]||''),summa_usd:sum,xizmat_haqi:sum*rate/100,foiz:rate,bolim
         });
       }
       if(!inserts.length){msg.style.color='var(--red)';msg.textContent='Ma\'lumot topilmadi!';return;}
